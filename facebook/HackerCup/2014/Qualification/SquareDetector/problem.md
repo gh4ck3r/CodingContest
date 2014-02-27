@@ -1,4 +1,5 @@
 # Square Detector : 20 points
+[See Online](https://www.facebook.com/hackercup/problems.php?pid=318555664954399&round=598486203541358)
 
 [Download Input File](https://www.facebook.com/hackercup/problems.php?pid=318555664954399&round=598486203541358#)
 
@@ -35,6 +36,7 @@ is a rectangle but not a square.
 
 ### Example input ·
 [Download](https://www.facebook.com/ajax/hackercup/example?pid=318555664954399&type=input)
+```
 	5
 	4
 	..##
@@ -63,11 +65,14 @@ is a rectangle but not a square.
 	#####
 	#####
 	#####
+```
 
 ### Example output ·
 [Download](https://www.facebook.com/ajax/hackercup/example?pid=318555664954399&type=output)
+```
 	Case #1: YES
 	Case #2: NO
 	Case #3: NO
 	Case #4: NO
 	Case #5: YES
+```

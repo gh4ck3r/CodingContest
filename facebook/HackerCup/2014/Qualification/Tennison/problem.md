@@ -1,4 +1,5 @@
 # Tennison : 45 points
+[See Online](https://www.facebook.com/hackercup/problems.php?pid=373965339404375&round=598486203541358)
 
 [Download Input File](https://www.facebook.com/hackercup/problems.php?pid=373965339404375&round=598486203541358#)
 
@@ -36,10 +37,10 @@ wins the match, rounded to 6 decimal places (quotes for clarity only). It is
 guaranteed that the output is unaffected by deviations as large as 10<sup>-8</sup>.
 
 ## Constraints
-1 ≤ **T** ≤ 100
-1 ≤ **K** ≤ 100
-0 ≤ **p<sub>s</sub>, p<sub>r</sub>, p<sub>i</sub>, p<sub>u</sub>, p<sub>w</sub>, p<sub>d</sub>, p<sub>l</sub>** ≤ 1
-**p<sub>s</sub>** > **p<sub>r</sub>**
+ * 1 ≤ **T** ≤ 100
+ * 1 ≤ **K** ≤ 100
+ * 0 ≤ **p<sub>s</sub>, p<sub>r</sub>, p<sub>i</sub>, p<sub>u</sub>, p<sub>w</sub>, p<sub>d</sub>, p<sub>l</sub>** ≤ 1
+ * **p<sub>s</sub>** > **p<sub>r</sub>**
 
 ### Example input · Download
     5
