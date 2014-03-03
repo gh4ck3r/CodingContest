@@ -41,14 +41,17 @@ Each test case starts with a line containing three space separated integers **N
 M P**
 
 The subsequent **N** lines are in the format
-	"<name> <shot_percentage> <height>".
+```
+"<name> <shot_percentage> <height>".
+```
 See the example for clarification.
 
 ## Constraints
-1 ≤ **T** ≤ 50
-2 * **P** ≤ **N** ≤ 30
-1 ≤ **M** ≤ 120
-1 ≤ **P** ≤ 5
+ * 1 ≤ **T** ≤ 50
+ * 2 * **P** ≤ **N** ≤ 30
+ * 1 ≤ **M** ≤ 120
+ * 1 ≤ **P** ≤ 5
+
 Each name starts with an uppercase English letter, followed by 0 to 20 lowercase
 English letters. There can be players sharing the same name. Each shot
 percentage is an integer from the range [0..100]. Each height is an integer from
