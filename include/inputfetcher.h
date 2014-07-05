@@ -25,6 +25,11 @@ class InputFetcher : protected std::istringstream
       if(mAutoNextLine && base::eof()) nextline();
       return static_cast<InputFetcher&>(base::operator>>(rhs));
     }
+    InputFetcher& operator>>(std::basic_string<char> &rhs) {
+      if(mAutoNextLine && base::eof()) nextline();
+      std::istream(rdbuf()) >> rhs;
+      return *this;
+    }
     template<typename T>
     operator T () {
       T val;
