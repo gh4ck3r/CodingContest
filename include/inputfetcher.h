@@ -17,25 +17,37 @@ class InputFetcher : protected std::istringstream
       base::seekg(0);
       return *this;
     }
+
     bool autoNextLine() const          { return mAutoNextLine; }
     void autoNextLine(const bool &val) { mAutoNextLine = val; }
+
+    template<typename T, typename... Args>
+    InputFetcher& fetch(T &data, Args&... args) {
+      return operator>>(data).fetch(args...);
+    }
 
     template<typename T>
     InputFetcher& operator>>(T &rhs) {
       if(mAutoNextLine && base::eof()) nextline();
       return static_cast<InputFetcher&>(base::operator>>(rhs));
     }
+
     InputFetcher& operator>>(std::basic_string<char> &rhs) {
       if(mAutoNextLine && base::eof()) nextline();
       std::istream(rdbuf()) >> rhs;
       return *this;
     }
+
     template<typename T>
     operator T () {
       T val;
       operator>>(val);
       return val;
     }
+
+  private:
+    // Fallback of variadic template method
+    InputFetcher& fetch() {return *this;}
 
   private:
     std::istream& mInputStream;
