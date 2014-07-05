@@ -6,11 +6,12 @@
 
 #include "inputfetcher.h"
 
-class TestCase {
+class TestCase
+{
   public:
     virtual bool parseInput(InputFetcher &input) = 0;
     virtual void dump(std::ostream &os) const = 0;
-    virtual bool run() = 0;
+    virtual bool run(unsigned int no=0) = 0;
   protected:
     void printBoundary(std::ostream &os, const char marker) const {
       char oldfill = os.fill(marker);
