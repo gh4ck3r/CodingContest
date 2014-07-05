@@ -17,7 +17,7 @@ class InputFetcher : protected std::istringstream
       base::seekg(0);
       return *this;
     }
-    bool autoNextLine()                { return mAutoNextLine; }
+    bool autoNextLine() const          { return mAutoNextLine; }
     void autoNextLine(const bool &val) { mAutoNextLine = val; }
 
     template<typename T>
