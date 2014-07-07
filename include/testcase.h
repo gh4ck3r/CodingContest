@@ -14,12 +14,18 @@ class TestCase
     virtual bool run(unsigned int no=0) = 0;
   protected:
     void printBoundary(std::ostream &os, const char marker) const {
+      os << hr(marker);
+    };
+
+    std::string hr(const char marker) const{
+      std::ostringstream os;
       char oldfill = os.fill(marker);
       std::streamsize oldwidth(os.width(80));
       os << std::string() << std::endl;
       os.fill(oldfill);
       os.width(oldwidth);
-    };
+      return os.str();
+    }
 
 };
 
