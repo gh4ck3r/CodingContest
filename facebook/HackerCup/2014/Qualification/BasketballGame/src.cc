@@ -72,19 +72,20 @@ std::ostream &operator<<(std::ostream &os, const Player &p)
   return os << (std::string)p;
 }
 
-bool operator < (const std::reference_wrapper<Player> &p1, const std::reference_wrapper<Player> &p2) 
+using PlayerRef = std::reference_wrapper<Player>;
+bool operator < (const PlayerRef &p1, const PlayerRef &p2) 
 {
   return p1.get() < p2.get();
 }
 
-bool operator == (const std::reference_wrapper<Player> &p1, const std::reference_wrapper<Player> &p2) 
+bool operator == (const PlayerRef &p1, const PlayerRef &p2) 
 {
   return p1.get() == p2.get();
 }
 
 class Bench
 {
-  using Players = std::list<std::reference_wrapper<Player>>;
+  using Players = std::list<PlayerRef>;
   public:
     void addPlayer(Player &p) { mPlayers.push_back(std::ref(p)); }
     void composeStarting(const size_t nPlayers) {
@@ -158,16 +159,15 @@ class BasketballGame : public TestCase
   using base = TestCase;
   public:
     bool parseInput(InputFetcher& input) override {
-      size_t nPlayer(input);
-      input >> mTimeElapsed >> mPlayersPerTeam;
+      size_t nPlayer;
+      input.fetch(nPlayer, mTimeElapsed, mPlayersPerTeam);
       assert(2 * mPlayersPerTeam <= nPlayer);
       assert(nPlayer <= 30);
 
       while(nPlayer--) {
         std::string name;
-        input.nextline() >> name;
-        size_t shot_percentage(input);
-        size_t height(input);
+        size_t shot_percentage, height;
+        input.nextline().fetch(name, shot_percentage, height);
         mPlayers.push_back(Player(name, shot_percentage, height));
       }
       input.nextline();
