@@ -51,8 +51,8 @@ class TestCaseContainer : protected std::vector<T>
     bool parseInput(std::istream &is) {
       InputFetcher input(is);
 
-      int testcase_cnt(input);
-      input.nextline();
+      int testcase_cnt;
+      input.fetch(testcase_cnt).nextline();
 
       while(testcase_cnt--) {
         T newcase;
