@@ -38,6 +38,12 @@ class InputFetcher : protected std::istringstream
       return *this;
     }
 
+    InputFetcher& operator>>(char &rhs) {
+      if(mAutoNextLine && base::eof()) nextline();
+      std::istream(rdbuf()) >> rhs;
+      return *this;
+    }
+
     template<typename T>
     operator T () {
       T val;
