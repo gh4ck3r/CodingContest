@@ -10,25 +10,29 @@ using Board = vector<Row>;
 
 using Coord = pair<int, int>;
 using Shape = array<Coord, 3>;
-using Shapes = array<Shape, 4>;
 
-const Cell black('#');
 const Cell empty('.');
 const Cell block('%');
 
-size_t C, H, W;
 Board board;
-Shapes shapes({
-  Shape({Coord(0, 0), Coord(0, 1), Coord(1, 0)}),
-  Shape({Coord(0, 0), Coord(0, 1), Coord(1, 1)}),
-  Shape({Coord(0, 0), Coord(1, 0), Coord(1, 1)}),
-  Shape({Coord(0, 0), Coord(1, 0), Coord(1, -1)})
-});
+size_t C, H, W;
+
+array<Shape, 4> shapes {
+  Shape{Coord{0, 0}, {0, 1}, {1, 0}},
+  Shape{Coord{0, 0}, {0, 1}, {1, 1}},
+  Shape{Coord{0, 0}, {1, 0}, {1, 1}},
+  Shape{Coord{0, 0}, {1, 0}, {1,-1}},
+};
 
 inline bool available(const size_t row, const size_t col, const Shape &shape)
 {
-  for (const auto &cell : shape){
-    if (board[row + cell.first][col + cell.second] != empty) return false;
+  for (const auto &cell : shape) {
+    if ((col == 0 && cell.second == -1) ||  // out of board
+        (W <= col + cell.second) ||
+        (H <= row + cell.first) ||
+        (board[row + cell.first][col + cell.second] != empty)) {
+      return false;
+    }
   }
   return true;
 }
@@ -37,7 +41,7 @@ inline bool put(const size_t row, const size_t col, const Shape &shape)
 {
   if (!available(row, col, shape)) return false;
   for (const auto &cell : shape) {
-    board[row+cell.first][col+cell.second] = block;
+    board[row + cell.first][col + cell.second] = block;
   }
   return true;
 }
@@ -45,23 +49,23 @@ inline bool put(const size_t row, const size_t col, const Shape &shape)
 inline void remove(const size_t row, const size_t col, const Shape &shape)
 {
   for (const auto &cell : shape) {
-    board[row+cell.first][col+cell.second] = empty;
+    board[row + cell.first][col + cell.second] = empty;
   }
 }
 
 size_t count(const size_t row = 0, const size_t col = 0)
 {
   if (row == H - 1) {
-    for (auto &cell : board[row]) if (cell == empty) return 0;
+    for (const auto &cell : board[row]) if (cell == empty) return 0;
     return 1;
   }
-  if (col == W) return count(row+1, 0);
-  if (board[row][col] != empty) return count(row, col+1);
+  if (col == W) return count(row + 1, 0);
+  if (board[row][col] != empty) return count(row, col + 1);
 
   size_t cnt=0;
   for (const auto &shape : shapes) {
     if (put(row, col, shape)) {
-      cnt += count(row, col+1);
+      cnt += count(row, col + 1);
       remove(row, col, shape);
     }
   }
@@ -71,7 +75,7 @@ size_t count(const size_t row = 0, const size_t col = 0)
 int main()
 {
   cin >> C;
-  while(C--) {
+  while (C--) {
     cin >> H >> W;
 
     board.assign(H, Row(W));
