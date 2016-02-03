@@ -2,37 +2,13 @@
 #include <vector>
 #include <algorithm>
 #include <array>
-#include <map>
+#include <cstring>
 
 using namespace std;
 
 using GameBoard = vector<int>;
-using Key = pair<int, int>;
-map<Key, int> Cache;
 
-int play(const GameBoard &board, const int &begin, const int &len)
-{
-  Key key(begin, len);
-  if (Cache[key]) return Cache[key];
-
-  const auto &left(board[begin]), &right(board[begin + len - 1]);
-
-  switch (len) {
-    case 0: return Cache[key] = 0;
-    case 1: return Cache[key] = left;
-    case 2: return Cache[key] = (left > right ? 1 : -1) * (left - right);
-  }
-
-  array<int, 4> values {
-    left  - play(board, begin+1, len-1),
-    right - play(board, begin  , len-1),
-          - play(board, begin+2, len-2),
-          - play(board, begin  , len-2)
-  };
-
-  return Cache[key] = *max_element(values.begin(), values.end());
-}
-
+#define MAX_N 50
 int main()
 {
   int C, n;
@@ -40,11 +16,32 @@ int main()
   while (C--) {
     cin >> n;
 
-    Cache.clear();
     GameBoard board(n);
     for (auto &cell : board) cin >> cell;
 
-    cout << play(board, 0, board.size()) << endl;
+    int P[MAX_N + 1][MAX_N + 1];
+    memset(P, 0, sizeof(P));
+    for (auto len=1;len<=n;++len) {
+      for (auto beg=0;beg<n;++beg) {
+        auto &p(P[beg][len]);
+        auto &left(board[beg]), &right(board[beg+len-1]);
+        switch (len) {
+          case 0: p = 0;break;
+          case 1: p = left;break;
+          case 2: p = (left >= right ? 1 : -1) * (left - right);break;
+          default:
+            array<int, 4> values {
+              left  - P[beg + 1][len-1],
+              right - P[beg]    [len-1],
+                    - P[beg + 2][len-2],
+                    - P[beg]    [len-2]
+            };
+            p = *max_element(values.begin(), values.end());
+        }
+      }
+    }
+
+    cout << P[0][n] << endl;
   }
   return 0;
 }
