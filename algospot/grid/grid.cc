@@ -1,11 +1,18 @@
 #include <iostream>
+#include <map>
 
 using namespace std;
 
 enum Shape {shape0, shape1, shape2};
 
+using Key = pair<size_t, Shape>;
+static map<Key, size_t> cache;
+
 size_t nWaysToTile(size_t width, Shape first_col = shape0)
 {
+  Key key(width, first_col);
+  if (cache[key]) return cache[key];
+
   switch (width--) {
     case 0: if (first_col != shape0) return 0;
     case 1: return 1;
@@ -25,7 +32,7 @@ size_t nWaysToTile(size_t width, Shape first_col = shape0)
       cnt += nWaysToTile(width-1, shape2);
       break;
   }
-  return cnt;
+  return cache[key] = cnt;
 }
 
 int main()
@@ -34,6 +41,7 @@ int main()
   cin >> N;
   while (N--) {
     cin >> W;
+    cache.clear();
     cout << ++n << ' ' << nWaysToTile(W) << endl;
   }
   return 0;
