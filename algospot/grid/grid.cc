@@ -1,48 +1,29 @@
 #include <iostream>
-#include <map>
 
 using namespace std;
 
-enum Shape {shape0, shape1, shape2};
-
-using Key = pair<size_t, Shape>;
-static map<Key, size_t> cache;
-
-size_t nWaysToTile(size_t width, Shape first_col = shape0)
-{
-  Key key(width, first_col);
-  if (cache[key]) return cache[key];
-
-  switch (width--) {
-    case 0: if (first_col != shape0) return 0;
-    case 1: return 1;
-  }
-
-  size_t cnt = nWaysToTile(width, shape0);
-  switch (first_col) {
-    case shape0:
-      cnt += nWaysToTile(width, shape1) * 2
-           + nWaysToTile(width, shape2)
-           + nWaysToTile(width-1, shape0);
-      break;
-    case shape1:
-      cnt += nWaysToTile(width, shape1);
-      break;
-    case shape2:
-      cnt += nWaysToTile(width-1, shape2);
-      break;
-  }
-  return cache[key] = cnt;
-}
-
 int main()
 {
-  size_t N, n = 0, W;
+  size_t buf[3][45] { {1, 1,},
+                      {0, 1,},
+                      {0, 1,} };
+  auto &F(buf[0]), &G(buf[1]), &H(buf[2]);
+
+  size_t N, i = 0, W, max_W=1;
   cin >> N;
   while (N--) {
     cin >> W;
-    cache.clear();
-    cout << ++n << ' ' << nWaysToTile(W) << endl;
+
+    if (max_W < W) {
+      for (size_t n=max_W+1; n <= W; ++n) {
+        F[n] = G[n] = H[n] = F[n-1];
+        F[n] += 2*G[n-1] + H[n-1] + F[n-2];
+        G[n] += G[n-1];
+        H[n] += H[n-2];
+      }
+    }
+
+    cout << ++i << ' ' << F[W] << endl;
   }
   return 0;
 }
