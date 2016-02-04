@@ -1,13 +1,11 @@
 #include <iostream>
 #include <array>
 #include <vector>
-#include <algorithm>
 
 using namespace std;
 
 using Cell = int;
 using GridColumn = array<Cell, 4>;
-using Grid = vector<GridColumn>;
 
 array<GridColumn, 5> ValidColumns {
   GridColumn
@@ -19,10 +17,9 @@ array<GridColumn, 5> ValidColumns {
 };
 GridColumn invalid1{0, 1, 1, 0};
 
-int nWaysToTile(Grid grid)
+int nWaysToTile(int width, GridColumn first_col = ValidColumns[0])
 {
-  GridColumn &first_col(grid.front());
-  switch (grid.size()) {
+  switch (width) {
     case 0: return 0;
     case 1:
       for (const auto &valid : ValidColumns) {
@@ -33,45 +30,24 @@ int nWaysToTile(Grid grid)
 
   int cnt = 0;
   if (first_col == ValidColumns[0]) {
-    Grid next_grid(grid.begin()+1, grid.end());
-    cnt += nWaysToTile(next_grid);
-
-    next_grid.front() = ValidColumns[1];
-    cnt += nWaysToTile(next_grid);
-
-    next_grid.front() = ValidColumns[2];
-    cnt += nWaysToTile(next_grid);
-
-    next_grid.front() = ValidColumns[3];
-    cnt += nWaysToTile(next_grid);
-
-    next_grid.front() = ValidColumns[4];
-    cnt += nWaysToTile(next_grid);
+    cnt += nWaysToTile(width-1, ValidColumns[0]);
+    cnt += nWaysToTile(width-1, ValidColumns[1]);
+    cnt += nWaysToTile(width-1, ValidColumns[2]);
+    cnt += nWaysToTile(width-1, ValidColumns[3]);
+    cnt += nWaysToTile(width-1, ValidColumns[4]);
   } else if (first_col == ValidColumns[1]) {
-    Grid next_grid(grid.begin()+1, grid.end());
-    cnt += nWaysToTile(next_grid);
-
-    next_grid.front() = ValidColumns[3];
-    cnt += nWaysToTile(next_grid);
+    cnt += nWaysToTile(width-1, ValidColumns[0]);
+    cnt += nWaysToTile(width-1, ValidColumns[3]);
   } else if (first_col == ValidColumns[2]) {
-    Grid next_grid(grid.begin()+1, grid.end());
-    cnt += nWaysToTile(next_grid);
-
-    next_grid.front() = invalid1;
-    cnt += nWaysToTile(next_grid);
+    cnt += nWaysToTile(width-1, ValidColumns[0]);
+    cnt += nWaysToTile(width-1, invalid1);
   } else if (first_col == ValidColumns[3]) {
-    Grid next_grid(grid.begin()+1, grid.end());
-    cnt += nWaysToTile(next_grid);
-
-    next_grid.front() = ValidColumns[1];
-    cnt += nWaysToTile(next_grid);
+    cnt += nWaysToTile(width-1, ValidColumns[0]);
+    cnt += nWaysToTile(width-1, ValidColumns[1]);
   } else if (first_col == ValidColumns[4]) {
-    Grid next_grid(grid.begin()+1, grid.end());
-    cnt += nWaysToTile(next_grid);
+    cnt += nWaysToTile(width-1, ValidColumns[0]);
   } else if (first_col == invalid1) {
-    Grid next_grid(grid.begin()+1, grid.end());
-    next_grid.front() = ValidColumns[2];
-    cnt += nWaysToTile(next_grid);
+    cnt += nWaysToTile(width-1, ValidColumns[2]);
   }
 
   return cnt;
@@ -83,9 +59,7 @@ int main()
   cin >> N;
   while (N--) {
     cin >> W;
-
-    Grid grid(W, {0, 0, 0, 0});
-    cout << ++n << ' ' << nWaysToTile(grid) << endl;
+    cout << ++n << ' ' << nWaysToTile(W) << endl;
   }
   return 0;
 }
