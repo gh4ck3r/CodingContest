@@ -1,40 +1,46 @@
 #include <iostream>
-#include <list>
+#include <vector>
 #include <algorithm>
 #include <limits>
 #include <cmath>
 #include <numeric>
+#include <iterator>
+#include <cassert>
 
 using namespace std;
-using Sequence = list<int>;
+using Sequence = vector<int>;
 
-size_t sumSquaredDiff(const Sequence &s)
+const size_t max_size_t = numeric_limits<size_t>::max();
+
+size_t sumSquaredDiff(const Sequence::iterator &beg,
+                      const Sequence::iterator &end)
 {
-  auto mean(round(accumulate(s.begin(), s.end(), 0.) / s.size()));
+  auto mean(round(accumulate(beg, end, 0.) / distance(beg, end)));
 
   auto sum(0);
-  for (const auto &n : s) sum += pow(n - mean, 2);
+  for (auto n = beg; n != end; ++n) sum += pow(*n - mean, 2);
 
   return sum;
 }
 
-size_t quantize(Sequence seq, size_t qNum)
+size_t quantize(const Sequence::iterator &beg,
+                const Sequence::iterator &end,
+                const size_t &qNum)
 {
-  if (seq.empty()) return 0;
+  if (beg == end) return 0;
 
-  size_t minSum(numeric_limits<size_t>::max());
   switch (qNum) {
-    case 0: return minSum;
-    case 1: return sumSquaredDiff(seq);
+    case 0: assert(false);return max_size_t;  // Shold not be reached
+    case 1: return sumSquaredDiff(beg, end);
   }
 
-  Sequence head;
-  while (!seq.empty()) {
-    head.push_back(seq.front());
-    seq.pop_front();
-    if (head.back() == seq.front()) continue;
+  auto minSum(max_size_t);
+  auto sep(beg);
+  for (++sep; sep != end; ++sep) {
+    if (*sep == *prev(sep)) continue;
 
-    minSum = min(minSum, sumSquaredDiff(head) + quantize(seq, qNum - 1));
+    minSum = min(minSum,
+                 sumSquaredDiff(beg, sep) + quantize(sep, end, qNum - 1));
   }
   return minSum;
 }
@@ -47,9 +53,11 @@ int main()
     cin >> N >> S;
     Sequence seq(N);
     for (auto &n : seq) cin >> n;
-    seq.sort();
 
-    cout << quantize(seq, S) << endl;
+    const auto &beg(seq.begin()), &end(seq.end());
+    sort(beg, end);
+
+    cout << quantize(beg, end, S) << endl;
   }
   return 0;
 }
