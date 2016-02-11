@@ -1,63 +1,70 @@
 #include <iostream>
-#include <vector>
 #include <algorithm>
 #include <limits>
 #include <cmath>
 #include <numeric>
-#include <iterator>
 #include <cassert>
+#include <cstring>
 
 using namespace std;
-using Sequence = vector<int>;
 
-const size_t max_size_t = numeric_limits<size_t>::max();
+const size_t maxN(100);
+const size_t max_size_t(numeric_limits<size_t>::max());
 
-size_t sumSquaredDiff(const Sequence::iterator &beg,
-                      const Sequence::iterator &end)
+size_t C, N, S;
+int seq[maxN];
+size_t cacheSSD[maxN][maxN];
+size_t cacheQtz[maxN][maxN][maxN];
+
+size_t ssd(const size_t &beg, const size_t &len)
 {
-  auto mean(round(accumulate(beg, end, 0.) / distance(beg, end)));
+  auto &cache(cacheSSD[beg][len]);
+  if (cache  == max_size_t) {
+    auto first(seq+beg);
+    auto mean(round(accumulate(first, first + len, 0.) / len));
 
-  auto sum(0);
-  for (auto n = beg; n != end; ++n) sum += pow(*n - mean, 2);
+    cache = 0;
+    for (size_t n(0); n < len; ++n) cache += pow(first[n] - mean, 2);
+  }
 
-  return sum;
+  return cache;
 }
 
-size_t quantize(const Sequence::iterator &beg,
-                const Sequence::iterator &end,
-                const size_t &qNum)
+size_t quantize(const size_t &beg = 0,
+                const size_t &len = N,
+                const size_t &qNum = S)
 {
-  if (beg == end) return 0;
+  if (!len) return 0;
 
-  switch (qNum) {
-    case 0: assert(false);return max_size_t;  // Shold not be reached
-    case 1: return sumSquaredDiff(beg, end);
+  auto &cache(cacheQtz[beg][len][qNum]);
+  if (cache == max_size_t) {
+    if (qNum == 1 || seq[beg] == seq[beg+len-1]) cache = ssd(beg, len);
+    else {
+      cache = max_size_t;
+      for (size_t i = 1; i < len; ++i) {
+        auto *current(seq+beg+i);
+        if (*(current-1) == *current) continue;
+        cache = min(cache,
+                     ssd(beg, i) + quantize(beg + i, len - i, qNum - 1));
+      }
+    }
   }
-
-  auto minSum(max_size_t);
-  auto sep(beg);
-  for (++sep; sep != end; ++sep) {
-    if (*sep == *prev(sep)) continue;
-
-    minSum = min(minSum,
-                 sumSquaredDiff(beg, sep) + quantize(sep, end, qNum - 1));
-  }
-  return minSum;
+  return cache;
 }
 
 int main()
 {
-  size_t C, N, S;
   cin >> C;
   while (C--) {
     cin >> N >> S;
-    Sequence seq(N);
-    for (auto &n : seq) cin >> n;
+    for (size_t i(0); i < N; ++i) cin >> seq[i];
 
-    const auto &beg(seq.begin()), &end(seq.end());
-    sort(beg, end);
+    sort(seq, seq+N);
 
-    cout << quantize(beg, end, S) << endl;
+    memset(cacheSSD, -1, sizeof(cacheSSD));
+    memset(cacheQtz, -1, sizeof(cacheQtz));
+
+    cout << quantize() << endl;
   }
   return 0;
 }
