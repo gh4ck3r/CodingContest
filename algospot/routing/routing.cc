@@ -4,58 +4,46 @@
 #include <set>
 #include <algorithm>
 
-#define DEBUG_HELPER
 using namespace std;
 
-using Noise = float;
+using Noise = double;
 using Computer = size_t;
 using NoiseInfo = map<Computer, Noise>;
 using NoiseMap = map<Computer, NoiseInfo>;
 
-#ifdef DEBUG_HELPER
-ostream& operator<<(ostream& os, const NoiseInfo &info)
-{
-  for (const auto &i : info) os << i.first << ": " << i.second << ' ';
-  return os;
-}
-
-ostream& operator<<(ostream& os, const NoiseMap &noiseMap)
-{
-  for (const auto &fromInfo : noiseMap) {
-    const auto &from(fromInfo.first);
-    for (const auto &toInfo: fromInfo.second) {
-      const auto &to(toInfo.first);
-      const auto &noise(toInfo.second);
-       os << '[' << from << ',' << to << "=" << noise << "] ";
-    }
-    os << endl;
-  }
-  return os;
-}
-#endif
 Noise minNoisePath(const NoiseMap &noiseMap)
 {
   size_t nComputers(noiseMap.size());
-  Computer begin(0), end(nComputers-1);
-
-  set<Computer> computers{0};
-  while (computers.size() < nComputers) computers.insert(*computers.rbegin()+1);
+  Computer begin(0), goal(nComputers-1);
+  set<Computer> computers;
+  while (nComputers--) computers.insert(nComputers);
 
   NoiseInfo noiseTo;
-  noiseTo[begin] = 0;
+  noiseTo[begin] = 1;
+
   auto popClosestComputer = [&computers, &noiseTo] () {
     auto i(min_element(computers.begin(), computers.end(),
           [&noiseTo] (const Computer &a, const Computer &b) {
-            return noiseTo[a] < noiseTo[b];
+            return noiseTo[a] && noiseTo[a] < noiseTo[b];
           }));
     auto c(*i);
     computers.erase(i);
     return c;
   };
+
   while (!computers.empty()) {
-    auto nearestComputer(popClosestComputer());
-    // XXX
+    const auto nearestComputer(popClosestComputer());
+    for (const auto &c : noiseMap.at(nearestComputer)) {
+      const auto &neighbor(c.first);
+      const auto &noise(noiseTo[nearestComputer] * c.second);
+
+      if (!noiseTo[neighbor] || noiseTo[neighbor] > noise) {
+        noiseTo[neighbor] = noise;
+      }
+    }
   }
+
+  return noiseTo[goal];
 }
 
 int main()
@@ -78,9 +66,7 @@ int main()
       }
     }
 
-    clog << noiseMap << endl;
-
-    cout << fixed << setprecision(8)
+    cout << fixed << setprecision(10)
          << minNoisePath(noiseMap) << endl;
 
   }
