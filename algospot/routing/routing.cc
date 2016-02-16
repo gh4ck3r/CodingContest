@@ -1,74 +1,76 @@
 #include <iostream>
 #include <iomanip>
-#include <map>
-#include <set>
+#include <limits>
 #include <algorithm>
 
 using namespace std;
 
-using Noise = double;
-using Computer = size_t;
-using NoiseInfo = map<Computer, Noise>;
-using NoiseMap = map<Computer, NoiseInfo>;
+using Node = size_t;
+using NoiseRatio = double;
 
-Noise minNoisePath(const NoiseMap &noiseMap)
+const Node MaxNode = 10000;
+const NoiseRatio MaxNoiseRatio = numeric_limits<NoiseRatio>::max();
+
+size_t C, N, M;
+NoiseRatio noiseBetween[MaxNode][MaxNode];
+
+NoiseRatio minNoiseRatio()
 {
-  size_t nComputers(noiseMap.size());
-  Computer begin(0), goal(nComputers-1);
-  set<Computer> computers;
-  while (nComputers--) computers.insert(nComputers);
+  const Node src(0), dst(N-1);
 
-  NoiseInfo noiseTo;
-  noiseTo[begin] = 1;
+  NoiseRatio noiseTo[N];
+  bool networkIncludes[N];
 
-  auto popClosestComputer = [&computers, &noiseTo] () {
-    auto i(min_element(computers.begin(), computers.end(),
-          [&noiseTo] (const Computer &a, const Computer &b) {
-            return noiseTo[a] && noiseTo[a] < noiseTo[b];
-          }));
-    auto c(*i);
-    computers.erase(i);
-    return c;
-  };
+  for (auto n(src); n < N; ++n) {
+    noiseTo[n] = MaxNoiseRatio;
+    networkIncludes[n] = false;
+  }
 
-  while (!computers.empty()) {
-    const auto nearestComputer(popClosestComputer());
-    for (const auto &c : noiseMap.at(nearestComputer)) {
-      const auto &neighbor(c.first);
-      const auto &noise(noiseTo[nearestComputer] * c.second);
+  noiseTo[src] = 1;
+  for (size_t cnt(src); cnt < N; ++cnt) {
+    Node shortestNode;
+    NoiseRatio minNoise = MaxNoiseRatio;
+    for (Node n(src); n < N; ++n) {
+      if (networkIncludes[n]) continue;
+      const auto &noise(noiseTo[n]);
+      if (minNoise > noise) {
+        minNoise = noise;
+        shortestNode = n;
+      }
+    }
+    networkIncludes[shortestNode] = true;
 
-      if (!noiseTo[neighbor] || noiseTo[neighbor] > noise) {
-        noiseTo[neighbor] = noise;
+    for (Node n(src); n < N; ++n) {
+      if (noiseBetween[shortestNode][n] == MaxNoiseRatio) continue;
+      if (noiseTo[n] > noiseTo[shortestNode] * noiseBetween[shortestNode][n]) {
+        noiseTo[n] = noiseTo[shortestNode] * noiseBetween[shortestNode][n];
       }
     }
   }
 
-  return noiseTo[goal];
+  return noiseTo[dst];
 }
 
 int main()
 {
-  size_t C;
+  cout << fixed << setprecision(10);
   cin >> C;
   while (C--) {
-    size_t N, M;
     cin >> N >> M;
 
-    NoiseMap noiseMap;
-    while (M--) {
-      Noise n;
-      Computer c1, c2;
-      cin >> c1 >> c2 >> n;
+    fill(&noiseBetween[0][0], &noiseBetween[N-1][N], MaxNoiseRatio);
+    for (size_t  m(0); m < M; ++m) {
+      size_t a, b;
+      NoiseRatio c;
+      cin >> a >> b >> c;
 
-      auto &prevNoise(noiseMap[c1][c2]);
-      if (!prevNoise || prevNoise > n) {
-        noiseMap[c2][c1] = prevNoise = n;
+      auto &knownNoise(noiseBetween[a][b]);
+      if (knownNoise > c) {
+        knownNoise = noiseBetween[b][a] = c;
       }
     }
 
-    cout << fixed << setprecision(10)
-         << minNoisePath(noiseMap) << endl;
-
+    cout << minNoiseRatio() << endl;
   }
   return 0;
 }
