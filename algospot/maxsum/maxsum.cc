@@ -1,9 +1,7 @@
 #include <iostream>
-#include <vector>
+#include <algorithm>
 
 using namespace std;
-
-using Sequence = vector<int>;
 
 int main()
 {
@@ -11,9 +9,15 @@ int main()
   cin >> T;
   while (T--) {
     cin >> N;
-    Sequence seq(N);
-    for (auto &n : seq) cin >> n;
-    // XXX
+
+    int n, maxSum(0), subSum(0);
+    while (N--) {
+      cin >> n;
+      subSum = max(0, subSum + n);
+      maxSum = max(maxSum, subSum);
+    }
+
+    cout << maxSum << endl;
   }
   return 0;
 }
