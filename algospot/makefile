@@ -54,4 +54,20 @@ $(PROFILE_FILE):
 	@$(MAKE) PROFILE= $@
 endif
 
+ifeq ($(TARGET), algospot)
+URL_PREFIX := https://algospot.com/judge/problem/read
+PARSE_SAMPLE = xmllint --html --nowarning --xpath "//section[@class='problem_sample_$(1)']/pre/text()" - 2>/dev/null > $(1)
+%: SHELL := /bin/bash
+#curl -s https://algospot.com/judge/problem/read/BRUTEFORCE | xmllint --html --nowarning --xpath "//section[@class='problem_sample_input']/pre/text()" - 2>/dev/null
+%:
+	@TARGET=$@                                     && \
+	content=$$(curl -s $(URL_PREFIX)/$${TARGET^^}) && \
+	echo "Making $${TARGET,,}"                     && \
+	mkdir $${TARGET,,} && cd $${TARGET,,}          && \
+	$(call PARSE_SAMPLE,input) <<< "$$content"     && \
+	$(call PARSE_SAMPLE,output) <<< "$$content"    && \
+	touch $${TARGET,,}.cc                          && \
+	echo $${TARGET,,} > .gitignore				   && \
+	ln -s ../makefile
+endif
 
