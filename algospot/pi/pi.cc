@@ -12,11 +12,6 @@ using offset_t = size_t;
 using Evaluator  = function<bool (const offset_t, const offset_t)>;
 using Evaluators = map<Score, Evaluator>;
 
-const offset_t cMinUnitLen(3), cMaxUnitLen(5);
-const Score cMaxScore(numeric_limits<Score>::max());
-
-#define UNUSED(x) x __attribute__((unused))
-
 bool isRepeatingNDecimals(const string &seq,
                           const offset_t beg,
                           const offset_t end,
@@ -51,40 +46,8 @@ bool isArithmeticProgression(const string &seq,
   return !diff || diff == commonDiff;
 }
 
-Score levelOf(const string &seq, const offset_t beg = 0)
-{
-  const size_t remained(seq.size() - beg);
-
-  if (!remained) return 0;
-  if (remained < cMinUnitLen) return 10;
-
-  using placeholders::_1;
-  using placeholders::_2;
-  using first_arg_t  = Evaluator::first_argument_type;
-  using second_arg_t = Evaluator::second_argument_type;
-  Evaluators evaluators {
-    {1,  bind(isRepeatingNDecimals,    seq, _1, _2, 1)},
-    {2,  bind(isArithmeticProgression, seq, _1, _2, 1)},
-    {4,  bind(isRepeatingNDecimals,    seq, _1, _2, 2)},
-    {5,  bind(isArithmeticProgression, seq, _1, _2, 0)},
-    {10, [](first_arg_t, second_arg_t) { return true; } }
-  };
-
-  Score minScore(cMaxScore);
-  auto offsetBegin(min(cMaxUnitLen, remained));
-  for (const auto &evaluator: evaluators) {
-    const auto &score(evaluator.first);
-    const auto &eval(evaluator.second);
-    for (auto offset(offsetBegin); cMinUnitLen <= offset; --offset) {
-      if (eval(beg, beg + offset)) {
-        minScore = min(minScore, score + levelOf(seq, beg + offset));
-        break;
-      }
-    }
-  }
-
-  return minScore;
-}
+const offset_t cMinUnitLen(3), cMaxUnitLen(5);
+const Score cMaxScore(numeric_limits<Score>::max());
 
 int main()
 {
@@ -93,7 +56,40 @@ int main()
   while (C--) {
     string seq;
     cin >> seq;
-    cout << levelOf(seq) << endl;
+
+    using placeholders::_1;
+    using placeholders::_2;
+    using first_arg_t  = Evaluator::first_argument_type;
+    using second_arg_t = Evaluator::second_argument_type;
+    Evaluators evaluators {
+      {1,  bind(isRepeatingNDecimals,    seq, _1, _2, 1)},
+      {2,  bind(isArithmeticProgression, seq, _1, _2, 1)},
+      {2,  bind(isArithmeticProgression, seq, _1, _2, -1)},
+      {4,  bind(isRepeatingNDecimals,    seq, _1, _2, 2)},
+      {5,  bind(isArithmeticProgression, seq, _1, _2, 0)},
+      {10, [](first_arg_t, second_arg_t) { return true; }}
+    };
+
+    vector<Score> levelOf(seq.length() + 1);
+    levelOf[0] = 0;
+    levelOf[1] = levelOf[2] = evaluators.rbegin()->first;
+
+    for (offset_t end(3); end <= seq.length(); ++end) {
+      levelOf[end] = cMaxScore;
+      auto offsetBegin(min(cMaxUnitLen, end));
+      for (const auto &evaluator: evaluators) {
+        const auto &score(evaluator.first);
+        const auto &eval(evaluator.second);
+        for (auto offset(offsetBegin); cMinUnitLen <= offset; --offset) {
+          auto &level(levelOf[end]);
+          auto beg(end - offset);
+          if (eval(beg, end)) {
+            level = min(level, score + levelOf[beg]);
+          }
+        }
+      }
+    }
+    cout << levelOf[seq.length()] << endl;
   }
   return 0;
 }
