@@ -10,7 +10,7 @@ using namespace std;
 using Score = size_t;
 using offset_t = size_t;
 using Evaluator  = function<bool (const offset_t, const offset_t)>;
-using Evaluators = map<Score, Evaluator>;
+using Evaluators = multimap<Score, Evaluator>;
 
 bool isRepeatingNDecimals(const string &seq,
                           const offset_t beg,
@@ -46,11 +46,11 @@ bool isArithmeticProgression(const string &seq,
   return !diff || diff == commonDiff;
 }
 
-const offset_t cMinUnitLen(3), cMaxUnitLen(5);
-const Score cMaxScore(numeric_limits<Score>::max());
-
 int main()
 {
+  const offset_t cMinUnitLen(3), cMaxUnitLen(5);
+  const Score cMaxScore(numeric_limits<Score>::max());
+
   size_t C;
   cin >> C;
   while (C--) {
