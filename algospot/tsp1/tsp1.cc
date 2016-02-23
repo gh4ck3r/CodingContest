@@ -1,54 +1,47 @@
 #include <iostream>
 #include <vector>
-#include <set>
-#include <limits>
+#include <algorithm>
+#include <cassert>
 
 using namespace std;
 
+using City = int;
 using Distance = double;
-using Distances = vector<vector<Distance> >;
-Distances distances;
-
-using City=int;
-using Cities=set<City>;
-Cities cities;
-const City anywhere = -1;
-
-Distance distance(const City &from, const City &to)
-{
-  if (from == anywhere || to == anywhere) return 0;
-  return distances[from][to];
-}
-
-Distance tsp(const City from = anywhere, const Cities togo = cities)
-{
-  if (togo.size() == 1) {
-    return distance(from, *togo.begin());
-  }
-
-  Distance d = numeric_limits<Distance>::max();
-  for (auto &c : togo) {
-    Cities next_togo(togo);
-    next_togo.erase(c);
-    d = min(d, tsp(c, next_togo) + distance(from, c));
-  }
-  return d;
-}
 
 int main()
 {
-  size_t C, N;
-  cin >> C;
   cout.precision(10);
   cout.setf(ios::fixed);
+
+  const size_t cMaxCities(10);
+  size_t C, N;
+  cin >> C;
   while(C--) {
     cin >> N;
+    assert(N <= cMaxCities);
 
-    distances.assign(N, vector<Distance>(N, 0));
-    for(auto &from : distances) for(auto &to : from) cin >> to;
-    cities.clear(); for(size_t i = 0; i < N; ++i) cities.insert(i);
+    Distance distances[cMaxCities][cMaxCities];
+    for (size_t from(0);from < N; ++from) {
+      for (size_t to(0);to < N; ++to) {
+        cin >> distances[from][to];
+      }
+    }
 
-    cout << tsp() << endl;
+    vector<City>  cities(N);
+    iota(cities.begin(), cities.end(), 0);
+
+    Distance min_dist(numeric_limits<Distance>::infinity());
+    do {
+      Distance dist_sum(0);
+      for (auto now(cities.begin()), prev(now++);
+           now != cities.end();
+           ++now, ++prev) {
+        dist_sum += distances[*prev][*now];
+      }
+      min_dist = min(min_dist, dist_sum);
+    } while(next_permutation(cities.begin(), cities.end()));
+
+    cout << min_dist << endl;
   }
   return 0;
 }
