@@ -1,54 +1,56 @@
 #include <iostream>
-#include <vector>
+#include <algorithm>
 #include <set>
 #include <limits>
 
+//#define NDEBUG
+#include <cassert>
+
 using namespace std;
 
+using City = int;
+using Cities = set<City>;
 using Distance = double;
-using Distances = vector<vector<Distance>>;
-Distances distances;
 
-using City=int;
-using Cities=set<City>;
-Cities cities;
-const City anywhere = -1;
+const auto cMaxCities(15U);
+Distance d[cMaxCities][cMaxCities];
 
-Distance distance(const City &from, const City &to)
+Distance TSP(const City from, const Cities &cities)
 {
-  if (from == anywhere || to == anywhere) return 0;
-  return distances[from][to];
-}
+  if (cities.empty()) return 0;
 
-Distance tsp(const City from = anywhere, const Cities togo = cities)
-{
-  if (togo.size() == 1) {
-    return distance(from, *togo.begin());
+  Distance min_distance = numeric_limits<Distance>::infinity();
+  for (const auto &k : cities) {
+    auto next_cities(cities);
+    next_cities.erase(k);
+    min_distance = min(min_distance, d[from][k] + TSP(k, next_cities));
   }
 
-  Distance d = numeric_limits<Distance>::max();
-  for (auto &c : togo) {
-    Cities next_togo(togo);
-    next_togo.erase(c);
-    d = min(d, tsp(c, next_togo) + distance(from, c));
-  }
-  return d;
+  return min_distance;
 }
 
 int main()
 {
-  size_t C, N;
-  cin >> C;
   cout.precision(10);
   cout.setf(ios::fixed);
-  while(C--) {
+
+  size_t C, N;
+  cin >> C;
+  while (C--) {
+    fill(&d[0][0], &d[cMaxCities-1][cMaxCities], 0);
+
     cin >> N;
+    assert(N <= cMaxCities);
+    for (auto from(0U); from < N; ++from) {
+      for (auto to(0U); to < N; ++to) {
+        cin >> d[from][to];
+      }
+    }
 
-    distances.assign(N, vector<Distance>(N, 0));
-    for(auto &from : distances) for(auto &to : from) cin >> to;
-    cities.clear(); for(size_t i = 0; i < N; ++i) cities.insert(i);
+    set<City> S;
+    for (auto city(0U);city < N; ++city) S.insert(city);
 
-    cout << tsp() << endl;
+    cout << TSP(N, S)<< endl; // All d[N][*] are 0
   }
   return 0;
 }
