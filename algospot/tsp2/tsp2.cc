@@ -1,50 +1,37 @@
 #include <iostream>
 #include <algorithm>
-#include <set>
 #include <limits>
-#include <map>
-#include <functional>
 
 //#define NDEBUG
 #include <cassert>
 
 using namespace std;
 
-using City = int;
-using Cities = set<City>;
+using City = uint16_t;
+using Cities = uint16_t;
 using Distance = double;
-using TSP = vector<map<Cities, Distance>>;
 
-const auto cMaxCities(15U);
-Distance d[cMaxCities][cMaxCities];
+const auto cMaxCities(sizeof(Cities) << 3);
 
-set<City> operator-(const set<City> &S, const City &c)
+Distance d[cMaxCities+1][cMaxCities];
+Distance cache[cMaxCities+1][1<<cMaxCities];
+
+Distance TSP(const City from, const Cities &cities)
 {
-  set<City> newS(S);
-  newS.erase(c);
-  return newS;
-}
+  auto &_cache(cache[from][cities]);
+  if (_cache) return _cache;
+  if (!cities) return 0;
 
-vector<Cities> getSubsets(const Cities &S, const size_t n)
-{
-  vector<Cities> ret;
-  vector<bool> idx(S.size());
+  Distance min_distance = numeric_limits<Distance>::infinity();
+  for (auto k(0U); (1<<k) <= cities; ++k) {
+    auto &&city(1<<k);
+    if (!(cities & city)) continue;
+    auto next_cities(cities);
+    next_cities &= ~city;
+    min_distance = min(min_distance, d[from][k] + TSP(k, next_cities));
+  }
 
-  fill_n(idx.begin(), n, true);
-  auto find_true([&idx](vector<bool>::iterator begin) {
-      return find_if(begin, idx.end(), [](const bool &b) { return b; });
-    });
-  do {
-    Cities cities;
-    for (auto &&s(find_true(idx.begin()));
-         idx.end() != s;
-         s = find_true(next(s))) {
-      cities.insert(*(next(S.begin(), distance(idx.begin(), s))));
-    }
-    ret.push_back(cities);
-  } while (prev_permutation(idx.begin(), idx.end()));
-
-  return ret;
+  return _cache = min_distance;
 }
 
 int main()
@@ -55,7 +42,8 @@ int main()
   size_t C, N;
   cin >> C;
   while (C--) {
-    fill(&d[0][0], &d[cMaxCities-1][cMaxCities], 0);
+    fill(&d[0][0], &d[cMaxCities][cMaxCities], 0);
+    fill(&cache[0][0], &cache[cMaxCities][1<<cMaxCities], 0);
 
     cin >> N;
     assert(N <= cMaxCities);
@@ -65,30 +53,7 @@ int main()
       }
     }
 
-    set<City> S;
-    for (auto city(0U);city < N; ++city) S.insert(city);
-
-    TSP tsp(N);
-    auto min_tsp(numeric_limits<Distance>::infinity());
-    for (auto n(1U); n < N; ++n) {
-      for (const auto &from : S) {
-        auto &&S1(S-from);
-        for (const auto &S2 : getSubsets(S1, n)) {
-          const auto cal_tsp([&](const City &k) {
-              return d[from][k] + tsp[k][S2-k];
-            });
-          const auto k(*min_element(S2.begin(), S2.end(),
-                [&](const City &k1, const City &k2) {
-                  return cal_tsp(k1) < cal_tsp(k2);
-                }));
-
-          tsp[from][S2] = cal_tsp(k);
-        }
-        if (n == N-1) min_tsp = min(min_tsp, tsp[from][S1]);
-      }
-    }
-
-    cout << min_tsp << endl;
+    cout << TSP(N, (1<<N)-1)<< endl;
   }
   return 0;
 }
